@@ -17,7 +17,7 @@ ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
 ## Updates
 
-* 19 Mar: We released the classification code of `LocalVim`.
+* 19 Mar: We released the classification code of `LocalVim`. The checkpoint and training log of `LocalVim-T` are uploaded.
 
 * 15 Mar: We are working hard in releasing the code, it will be public in several days.
 
@@ -50,7 +50,7 @@ Recent advancements in state space models, notably Mamba, have demonstrated sign
 |Model|Dataset|Resolution|ACC@1|#Params|FLOPs|ckpts/logs|
 |:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 |Vim-Ti|ImageNet-1K|224x224|73.1|7M|1.5G|-|
-|LocalVim-T|ImageNet-1K|224x224|76.2|8M|1.5G||
+|LocalVim-T|ImageNet-1K|224x224|76.2|8M|1.5G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vim_tiny.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_tiny.txt)|
 
 ## Getting Started
 
