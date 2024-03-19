@@ -75,7 +75,7 @@ cd mamba-1p1p1 && pip install .
 
 
 Other dependencies:
-```json
+```shell
 timm==0.9.12
 ```
 
