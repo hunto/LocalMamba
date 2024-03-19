@@ -1,0 +1,34 @@
+aa: rand-m9-mstd0.5
+batch_size: 96
+decay_by_epoch: false
+decay_epochs: 2.4
+decay_rate: 0.97
+drop: 0.2
+epochs: 450
+log_interval: 50
+lr: 0.048
+min_lr: 1.0e-05
+model_ema: true
+model_ema_decay: 0.9999
+momentum: 0.9
+opt: rmsproptf
+opt_betas: null
+opt_eps: 0.001
+remode: pixel
+reprob: 0.2
+sched: step
+seed: 42
+warmup_epochs: 3
+warmup_lr: 1.0e-06
+weight_decay: 1.0e-05
+workers: 4
+# kd
+kd: 'dist'
+ori_loss_weight: 1.
+kd_loss_weight: 1.
+teacher_model: 'tv_resnet34'
+teacher_pretrained: True
+kd_loss_kwargs:
+  use_ae: True
+  ae_channels: 1024
+  tau: 1

@@ -1,0 +1,32 @@
+backbone:
+    # name: [stride, in_channels, out_channels, expand_ratio, op]
+    layer0: [2, 3, 32, 1, 'conv3x3']
+    layer1: [1, 32, 16, 1, 'ir_3x3_nse']
+    layer2: [2, 16, 32, 3, 'ir_7x7_se']
+    layer3: [1, 32, 32, 1, 'id']
+    layer4: [1, 32, 32, 1, 'id']
+    layer5: [1, 32, 32, 3, 'ir_3x3_se']
+    layer6: [2, 32, 40, 3, 'ir_5x5_se']
+    layer7: [1, 40, 40, 3, 'ir_5x5_se']
+    layer8: [1, 40, 40, 6, 'ir_3x3_se']
+    layer9: [1, 40, 40, 3, 'ir_3x3_se']
+    layer10: [2, 40, 80, 3, 'ir_3x3_se']
+    layer11: [1, 80, 80, 1, 'id']
+    layer12: [1, 80, 80, 6, 'ir_5x5_se']
+    layer13: [1, 80, 80, 6, 'ir_5x5_se']
+    layer14: [1, 80, 96, 6, 'ir_5x5_se']
+    layer15: [1, 96, 96, 3, 'ir_3x3_se']
+    layer16: [1, 96, 96, 3, 'ir_3x3_se']
+    layer17: [1, 96, 96, 3, 'ir_3x3_se']
+    layer18: [2, 96, 192, 6, 'ir_5x5_se']
+    layer19: [1, 192, 192, 3, 'ir_5x5_se']
+    layer20: [1, 192, 192, 6, 'ir_7x7_se']
+    layer21: [1, 192, 192, 3, 'ir_3x3_se']
+    layer22: [1, 192, 320, 6, 'ir_7x7_se']
+    layer23: [1, 320, 1280, 1, 'conv2d']
+    layer24: [1, 1280, 1280, 1, 'gavgp']
+head:
+    linear1:
+        dim_in: 1280
+        dim_out: 1000
+

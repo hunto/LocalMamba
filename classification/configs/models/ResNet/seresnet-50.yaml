@@ -1,0 +1,14 @@
+backbone:
+    # name: [n, stride, in_channels, out_channels, expand_ratio, op]
+    conv_stem: [1, 2, 3, 64, 1, 'conv7x7']
+    pool1: [1, 2, 64, 64, 1, 'maxp_3x3']
+    stage1: [3, 1, 64, 256, 1, 'res_3x3_se', {'planes': 64}]
+    stage2: [4, 2, 256, 512, 1, 'res_3x3_se']
+    stage3: [6, 2, 512, 1024, 1, 'res_3x3_se']
+    stage4: [3, 2, 1024, 2048, 1, 'res_3x3_se']
+    gavg_pool: [1, 2048, 2048, 1, 'gavgp']
+head:
+    linear1:
+        dim_in: 2048
+        dim_out: 1000
+
