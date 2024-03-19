@@ -195,7 +195,7 @@ class LocalReverseTriton(torch.autograd.Function):
         B, C, H, W = ctx.ori_shape
         BC, BH, BW, NC, NH, NW = ctx.triton_shape
 
-        x, (H, W) = pad_tensor(x, ctx.K, H, W)
+        y, (H, W) = pad_tensor(y, ctx.K, H, W)
 
         if y.stride(-1) != 1:
             y = y.contiguous()
