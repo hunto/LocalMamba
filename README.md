@@ -17,8 +17,8 @@ ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
 ## Updates
 
-* 19 Mar: We released the classification code of `LocalVim`. The checkpoint and training log of `LocalVim-T` are uploaded.
-
+* 20 Mar: We released the classification code of `LocalVMamba` ([py](classification\lib\models\local_vmamba.py)). Since we rewrite the code related to Mamba operations, we need to retrain the models, and the checkpoints and logs of rest models will be uploaded later. We are preparing the detection and segmentation code now.
+* 19 Mar: We released the classification code of `LocalVim` ([py](classification\lib\models\local_vim.py)). The checkpoint and training log of `LocalVim-T` are uploaded.
 * 15 Mar: We are working hard in releasing the code, it will be public in several days.
 
 
@@ -50,7 +50,13 @@ Recent advancements in state space models, notably Mamba, have demonstrated sign
 |Model|Dataset|Resolution|ACC@1|#Params|FLOPs|ckpts/logs|
 |:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 |Vim-Ti|ImageNet-1K|224x224|73.1|7M|1.5G|-|
-|LocalVim-T|ImageNet-1K|224x224|76.2|8M|1.5G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vim_tiny.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_tiny.txt)|
+|Vim-S|ImageNet-1K|224x224|80.3|26M|5.1G|-|
+|**LocalVim-T**|ImageNet-1K|224x224|76.2|8M|1.5G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vim_tiny.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_tiny.txt)|
+|**LocalVim-S**|ImageNet-1K|224x224|81.2|28M|4.8G|retraining...|
+|VMamba-T|ImageNet-1K|224x224|82.2|22M|5.6G|-|
+|VMamba-S|ImageNet-1K|224x224|83.5|44M|11.2G|-|
+|**LocalVMamba-T**|ImageNet-1K|224x224|82.7|26M|5.7G|retraining...|
+|**LocalVMamba-S**|ImageNet-1K|224x224|83.7|50M|11.4G|retraining...|
 
 ## Getting Started
 
@@ -77,6 +83,7 @@ cd mamba-1p1p1 && pip install .
 Other dependencies:
 ```shell
 timm==0.9.12
+fvcore==0.1.5.post20221221
 ```
 
 
