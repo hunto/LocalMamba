@@ -123,10 +123,11 @@ class CheckpointManager():
         save_dict = torch.load(ckpt_path, map_location='cpu')
 
         for key, value in self.additions.items():
-            if hasattr(value, 'load_state_dict'):
-                value.load_state_dict(save_dict[key])
-            else:
-                self.additions[key] = save_dict[key]
+            if key in save_dict:
+                if hasattr(value, 'load_state_dict'):
+                    value.load_state_dict(save_dict[key])
+                else:
+                    self.additions[key] = save_dict[key]
 
         if 'state_dict' in save_dict and 'model' not in save_dict:
             save_dict['model'] = save_dict['state_dict']

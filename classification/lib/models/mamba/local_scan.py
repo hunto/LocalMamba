@@ -137,12 +137,19 @@ class LocalScanTriton(torch.autograd.Function):
 
         if y.stride(-1) != 1:
             y = y.contiguous()
-        if len(y.shape) == 4:
+        if len(y.shape) == 4 or ctx.shape != ctx.ori_shape:
             x = y.new_empty((B, C, H, W))
         else:
             x = y.new_empty((B, C, H * W))
 
         triton_local_reverse[(NH * NW, NC, B)](y, x, ctx.K, ctx.flip, BC, BH, BW, C, H, W, NH, NW)
+
+        if ctx.shape != ctx.ori_shape:
+            _, _, ori_H, ori_W = ctx.ori_shape
+            x = x[:, :, :ori_H, :ori_W]
+            if len(y.shape) == 3:
+                x = x.flatten(2)
+
         return x, None, None, None, None
 
 
@@ -173,7 +180,7 @@ class LocalReverseTriton(torch.autograd.Function):
         if x.stride(-1) != 1:
             x = x.contiguous()
         
-        if len(x.shape) == 4:
+        if len(x.shape) == 4 or ctx.ori_shape != ctx.shape:
             y = x.new_empty((B, C, H, W))
         else:
             y = x.new_empty((B, C, H * W))
@@ -182,10 +189,9 @@ class LocalReverseTriton(torch.autograd.Function):
 
         if ctx.ori_shape != ctx.shape:
             ori_H, ori_W = ctx.ori_shape[-2:]
-            if len(y.shape) == 3:
-                y = y.view(B, C, H, W)[:, :, :ori_H, :ori_W].flatten(2)
-            else:
-                y = y[:, :, :ori_H, :ori_W]
+            y = y[:, :, :ori_H, :ori_W]
+            if len(x.shape) == 3:
+                y = y.flatten(2)
 
         return y
     
@@ -195,12 +201,14 @@ class LocalReverseTriton(torch.autograd.Function):
         B, C, H, W = ctx.ori_shape
         BC, BH, BW, NC, NH, NW = ctx.triton_shape
 
+        _is_y_BCHW = len(y.shape) == 4
+
         y, (H, W) = pad_tensor(y, ctx.K, H, W)
 
         if y.stride(-1) != 1:
             y = y.contiguous()
 
-        if len(y.shape) == 4:
+        if _is_y_BCHW:
             x = y.new_empty((B, C, H, W))
         else:
             x = y.new_empty((B, C, H * W))
@@ -214,7 +222,6 @@ class LocalReverseTriton(torch.autograd.Function):
 def pad_tensor(x, w, H, W):
     if H % w == 0 and W % w == 0:
         return x, (H, W)
-    ori_x = x
     B, C = x.shape[:2]
     if len(x.shape) == 3:
         x = x.view(B, C, H, W)
@@ -223,6 +230,9 @@ def pad_tensor(x, w, H, W):
     newH, newW = Hg * w, Wg * w
     x = F.pad(x, (0, newW - W, 0, newH - H))
     
+    # We can skip flattening x back to BCL as the next operation
+    # is triton_local_reverse / triton_local_scan, which supports
+    # both BCHW and BCL inputs
     # if len(ori_x.shape) == 3:
     #     x = x.flatten(2)
 
