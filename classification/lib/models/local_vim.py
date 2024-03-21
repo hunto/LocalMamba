@@ -424,7 +424,7 @@ class VisionMamba(nn.Module):
             """
             D = layer.mixer.d_inner
             N = layer.mixer.d_state
-            for i in range(4):
+            for i in range(len(layer.mixer.multi_scan.choices)):
                 # flops += 9 * L * D * N + 2 * D * L
                 # A
                 flops += D * L * N
@@ -468,8 +468,14 @@ class Backbone_LocalVisionMamba(VisionMamba):
 
 
     def load_pretrained(self, ckpt):
+        if ckpt is None:
+            return
         print(f'Load backbone state dict from {ckpt}')
-        state_dict = torch.load(ckpt, map_location='cpu')['state_dict']
+        if ckpt.startswith('http'):
+            from mmengine.utils.dl_utils import load_url
+            state_dict = load_url(ckpt, map_location='cpu')['state_dict']
+        else:
+            state_dict = torch.load(ckpt, map_location='cpu')['state_dict']
         if 'pos_embed' in state_dict:
             pos_size = int(math.sqrt(state_dict['pos_embed'].shape[1]))
             state_dict['pos_embed'] = self.resize_pos_embed(
@@ -494,8 +500,8 @@ class Backbone_LocalVisionMamba(VisionMamba):
                 (pos_size, pos_size),
                 'bicubic'
             )[0]
-        a, b = self.load_state_dict(state_dict, strict=False)
-        print(a, b)
+        res = self.load_state_dict(state_dict, strict=False)
+        print(res)
     
     @staticmethod
     def resize_pos_embed(pos_embed, input_shpae, pos_shape, mode):
