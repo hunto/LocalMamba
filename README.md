@@ -16,7 +16,7 @@ ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
 
 ## Updates
-
+* 21 Mar: We released the detection code of `LocalVim`.
 * 20 Mar: We released the classification code of `LocalVMamba` ([py](classification\lib\models\local_vmamba.py)). Since we rewrite the code related to Mamba operations, we need to retrain the models, and the checkpoints and logs of rest models will be uploaded later. We are preparing the detection and segmentation code now.
 * 19 Mar: We released the classification code of `LocalVim` ([py](classification\lib\models\local_vim.py)). The checkpoint and training log of `LocalVim-T` are uploaded.
 * 15 Mar: We are working hard in releasing the code, it will be public in several days.
@@ -57,6 +57,11 @@ Recent advancements in state space models, notably Mamba, have demonstrated sign
 |VMamba-S|ImageNet-1K|224x224|83.5|44M|11.2G|-|
 |**LocalVMamba-T**|ImageNet-1K|224x224|82.7|26M|5.7G|retraining...|
 |**LocalVMamba-S**|ImageNet-1K|224x224|83.7|50M|11.4G|retraining...|
+
+### Object Detection & Instance Segmentation
+
+See [detection](detection) folder.
+
 
 ## Getting Started
 
