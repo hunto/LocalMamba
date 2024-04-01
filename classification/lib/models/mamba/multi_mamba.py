@@ -15,7 +15,8 @@ try:
 except ImportError:
     mamba_inner_fn_no_out_proj = None
 
-from .local_scan import LocalScanTriton, LocalReverseTriton
+from .local_scan import LocalScanTriton, LocalReverseTriton, local_scan, local_scan_bchw, local_reverse
+
 
 class MultiScan(nn.Module):
 
@@ -85,7 +86,8 @@ class MultiScan(nn.Module):
             elif direction.startswith('w'):
                 K = int(direction[1:].split('_')[0])
                 flip = direction.endswith('flip')
-                return LocalScanTriton.apply(x.transpose(-2, -1), K, flip, H, W)
+                return local_scan(x, K, H, W, flip=flip)
+                # return LocalScanTriton.apply(x.transpose(-2, -1), K, flip, H, W)
             else:
                 raise RuntimeError(f'Direction {direction} not found.')
         elif len(x.shape) == 4:
@@ -100,7 +102,8 @@ class MultiScan(nn.Module):
             elif direction.startswith('w'):
                 K = int(direction[1:].split('_')[0])
                 flip = direction.endswith('flip')
-                return LocalScanTriton.apply(x, K, flip, H, W).flatten(2)
+                return local_scan_bchw(x, K, H, W, flip=flip)
+                # return LocalScanTriton.apply(x, K, flip, H, W).flatten(2)
             else:
                 raise RuntimeError(f'Direction {direction} not found.')
 
@@ -121,7 +124,8 @@ class MultiScan(nn.Module):
         elif direction.startswith('w'):
             K = int(direction[1:].split('_')[0])
             flip = direction.endswith('flip')
-            return LocalReverseTriton.apply(x, K, flip, H, W)
+            return local_reverse(x, K, H, W, flip=flip)
+            # return LocalReverseTriton.apply(x, K, flip, H, W)
         else:
             raise RuntimeError(f'Direction {direction} not found.')    
         

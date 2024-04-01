@@ -115,8 +115,16 @@ def main():
     model = DDP(model,
                 device_ids=[args.local_rank],
                 find_unused_parameters=False)
-    from torch.distributed.algorithms.ddp_comm_hooks import default as comm_hooks
-    model.register_comm_hook(None, comm_hooks.fp16_compress_hook)
+    # from torch.distributed.algorithms.ddp_comm_hooks import default as comm_hooks
+    # model.register_comm_hook(None, comm_hooks.fp16_compress_hook)
+    # import torch.distributed.algorithms.ddp_comm_hooks.powerSGD_hook as powerSGD
+    # state = powerSGD.PowerSGDState(
+    #     process_group=None,
+    #     matrix_approximation_rank=1,
+    #     start_powerSGD_iter=1000,
+    # )
+    # model.register_comm_hook(state, powerSGD.powerSGD_hook)
+
     if args.kd != '':
         loss_fn.student = model
     logger.info(model)

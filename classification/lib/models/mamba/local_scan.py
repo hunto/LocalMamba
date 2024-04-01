@@ -98,13 +98,12 @@ class LocalScanTriton(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x: torch.Tensor, K: int, flip: bool, H: int = None, W: int = None):
         ori_x = x
-        if len(x.shape) == 4:
-            B, C, H, W = x.shape
-        elif len(x.shape) == 3:
-            B, C, _ = x.shape
-            assert H is not None and W is not None, "x must be BCHW format to infer the H W"
-        else:
-            raise RuntimeError(f"Unsupported shape of x: {x.shape}")
+        B, C = x.shape[:2]
+        if H is None or W is None:
+            if len(x.shape) == 4:
+                H, W = x.shape[-2:]
+            elif len(x.shape) == 3:
+                raise RuntimeError("x must be BCHW format to infer the H W")
         B, C, H, W = int(B), int(C), int(H), int(W)
 
         ctx.ori_shape = (B, C, H, W)
@@ -156,13 +155,12 @@ class LocalScanTriton(torch.autograd.Function):
 class LocalReverseTriton(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x: torch.Tensor, K: int, flip: bool, H: int = None, W: int = None):
-        if len(x.shape) == 4:
-            B, C, H, W = x.shape
-        elif len(x.shape) == 3:
-            B, C, _ = x.shape
-            assert H is not None and W is not None, "x must be BCHW format to infer the H W"
-        else:
-            raise RuntimeError(f"Unsupported shape of x: {x.shape}")
+        B, C = x.shape[:2]
+        if H is None or W is None:
+            if len(x.shape) == 4:
+                H, W = x.shape[-2:]
+            elif len(x.shape) == 3:
+                raise RuntimeError("x must be BCHW format to infer the H W")
         B, C, H, W = int(B), int(C), int(H), int(W)
         
         ctx.ori_shape = (B, C, H, W)
@@ -241,31 +239,74 @@ def pad_tensor(x, w, H, W):
 
 """PyTorch code for local scan and local reverse"""
 
-def local_scan(x, w=7, H=14, W=14, h_scan=False):
+
+def local_scan(x, w=7, H=14, W=14, flip=False, column_first=False):
+    """Local windowed scan in LocalMamba
+    Input: 
+        x: [B, L, C]
+        H, W: original width and height before padding
+        column_first: column-wise scan first (the additional direction in VMamba)
+    Return: [B, C, L]
+    """
     B, L, C = x.shape
     x = x.view(B, H, W, C)
     Hg, Wg = math.ceil(H / w), math.ceil(W / w)
     if H % w != 0 or W % w != 0:
         newH, newW = Hg * w, Wg * w
         x = F.pad(x, (0, 0, 0, newW - W, 0, newH - H))
-    if h_scan:
-        x = x.view(B, Hg, w, Wg, w, C).permute(0, 3, 1, 4, 2, 5).reshape(B, -1, C)
+    if column_first:
+        x = x.view(B, Hg, w, Wg, w, C).permute(0, 5, 3, 1, 4, 2).reshape(B, C, -1)
     else:
-        x = x.view(B, Hg, w, Wg, w, C).permute(0, 1, 3, 2, 4, 5).reshape(B, -1, C)
+        x = x.view(B, Hg, w, Wg, w, C).permute(0, 5, 1, 3, 2, 4).reshape(B, C, -1)
+    if flip:
+        x = x.flip([-1])
     return x
 
-def local_reverse(x, w=7, H=14, W=14, h_scan=False):
-    B, L, C = x.shape
+
+def local_scan_bchw(x, w=7, H=14, W=14, flip=False, column_first=False):
+    """Local windowed scan in LocalMamba
+    Input: 
+        x: [B, C, H, W]
+        H, W: original width and height before padding
+        column_first: column-wise scan first (the additional direction in VMamba)
+    Return: [B, C, L]
+    """
+    B, C, _, _ = x.shape
+    x = x.view(B, C, H, W)
     Hg, Wg = math.ceil(H / w), math.ceil(W / w)
     if H % w != 0 or W % w != 0:
-        if h_scan:
-            x = x.view(B, Wg, Hg, w, w, C).permute(0, 2, 4, 1, 3, 5).reshape(B, Hg * w, Wg * w, C)
-        else:
-            x = x.view(B, Hg, Wg, w, w, C).permute(0, 1, 3, 2, 4, 5).reshape(B, Hg * w, Wg * w, C)
-        x = x[:, :H, :W].reshape(B, -1, C)
+        newH, newW = Hg * w, Wg * w
+        x = F.pad(x, (0, newW - W, 0, newH - H))
+    if column_first:
+        x = x.view(B, C, Hg, w, Wg, w).permute(0, 1, 4, 2, 5, 3).reshape(B, C, -1)
     else:
-        if h_scan:
-            x = x.view(B, Wg, Hg, w, w, C).permute(0, 2, 4, 1, 3, 5).reshape(B, L, C)
+        x = x.view(B, C, Hg, w, Wg, w).permute(0, 1, 2, 4, 3, 5).reshape(B, C, -1)
+    if flip:
+        x = x.flip([-1])
+    return x
+
+
+def local_reverse(x, w=7, H=14, W=14, flip=False, column_first=False):
+    """Local windowed scan in LocalMamba
+    Input: 
+        x: [B, C, L]
+        H, W: original width and height before padding
+        column_first: column-wise scan first (the additional direction in VMamba)
+    Return: [B, C, L]
+    """
+    B, C, L = x.shape
+    Hg, Wg = math.ceil(H / w), math.ceil(W / w)
+    if flip:
+        x = x.flip([-1])
+    if H % w != 0 or W % w != 0:
+        if column_first:
+            x = x.view(B, C, Wg, Hg, w, w).permute(0, 1, 3, 5, 2, 4).reshape(B, C, Hg * w, Wg * w)
         else:
-            x = x.view(B, Hg, Wg, w, w, C).permute(0, 1, 3, 2, 4, 5).reshape(B, L, C)
+            x = x.view(B, C, Hg, Wg, w, w).permute(0, 1, 2, 4, 3, 5).reshape(B, C, Hg * w, Wg * w)
+        x = x[:, :, :H, :W].reshape(B, C, -1)
+    else:
+        if column_first:
+            x = x.view(B, C, Wg, Hg, w, w).permute(0, 1, 3, 5, 2, 4).reshape(B, C, L)
+        else:
+            x = x.view(B, C, Hg, Wg, w, w).permute(0, 1, 2, 4, 3, 5).reshape(B, C, L)
     return x

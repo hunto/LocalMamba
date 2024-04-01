@@ -16,6 +16,8 @@ ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
 
 ## Updates
+* 01 Apr: We released the ckpt and log of `LocalVMamba-S`.
+* 01 Apr: We spent some time debugging an undesired performance collapse bug in triton code of local scan, but we still couldn't find the bug. So we switched the local scan and local reverse to the original pytorch versions. The speeds are similar.
 * 21 Mar: We released the detection code of `LocalVim`.
 * 20 Mar: We released the classification code of `LocalVMamba` ([py](classification\lib\models\local_vmamba.py)). Since we rewrite the code related to Mamba operations, we need to retrain the models, and the checkpoints and logs of rest models will be uploaded later. We are preparing the detection and segmentation code now.
 * 19 Mar: We released the classification code of `LocalVim` ([py](classification\lib\models\local_vim.py)). The checkpoint and training log of `LocalVim-T` are uploaded.
@@ -56,7 +58,7 @@ Recent advancements in state space models, notably Mamba, have demonstrated sign
 |VMamba-T|ImageNet-1K|224x224|82.2|22M|5.6G|-|
 |VMamba-S|ImageNet-1K|224x224|83.5|44M|11.2G|-|
 |**LocalVMamba-T**|ImageNet-1K|224x224|82.7|26M|5.7G|retraining...|
-|**LocalVMamba-S**|ImageNet-1K|224x224|83.7|50M|11.4G|retraining...|
+|**LocalVMamba-S**|ImageNet-1K|224x224|83.7|50M|11.4G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vssm_small.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vssm_small.txt)|
 
 ### Object Detection & Instance Segmentation
 
