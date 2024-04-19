@@ -2,7 +2,7 @@
 <h1>LocalMamba</h1>
 <h3>LocalMamba: Visual State Space Model with Windowed Selective Scan</h3>
 
-[Tao Huang](https://taohuang.info), Xiaohuan Pei, [Shan You](https://shanyou92.github.io), [Fei Wang](https://scholar.google.com.hk/citations?user=ljt16JkAAAAJ), Chen Qian, [Chang Xu](http://changxu.xyz/)
+[Tao Huang](https://taohuang.info), [Xiaohuan Pei](https://github.com/TerryPei), [Shan You](https://shanyou92.github.io), [Fei Wang](https://scholar.google.com.hk/citations?user=ljt16JkAAAAJ), Chen Qian, [Chang Xu](http://changxu.xyz/)
 
 ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
@@ -16,6 +16,7 @@ ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
 
 ## Updates
+* 19 Apr: We released the ckpt and log of `LocalVim-S`.
 * 01 Apr: We released the ckpt and log of `LocalVMamba-S`.
 * 01 Apr: We spent some time debugging an undesired performance collapse bug in triton code of local scan, but we still couldn't find the bug. So we switched the local scan and local reverse to the original pytorch versions. The speeds are similar.
 * 21 Mar: We released the detection code of `LocalVim`.
@@ -54,7 +55,7 @@ Recent advancements in state space models, notably Mamba, have demonstrated sign
 |Vim-Ti|ImageNet-1K|224x224|73.1|7M|1.5G|-|
 |Vim-S|ImageNet-1K|224x224|80.3|26M|5.1G|-|
 |**LocalVim-T**|ImageNet-1K|224x224|76.2|8M|1.5G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vim_tiny.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_tiny.txt)|
-|**LocalVim-S**|ImageNet-1K|224x224|81.2|28M|4.8G|retraining...|
+|**LocalVim-S**|ImageNet-1K|224x224|81.1|28M|4.8G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vssm_small.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_small.txt)|
 |VMamba-T|ImageNet-1K|224x224|82.2|22M|5.6G|-|
 |VMamba-S|ImageNet-1K|224x224|83.5|44M|11.2G|-|
 |**LocalVMamba-T**|ImageNet-1K|224x224|82.7|26M|5.7G|retraining...|
