@@ -762,17 +762,17 @@ class Backbone_LocalVSSM(VSSM):
         del self.classifier
         self.load_pretrained(pretrained)
 
-    def load_pretrained(self, ckpt=None, key="state_dict"):
+    def load_pretrained(self, ckpt):
         if ckpt is None:
             return
-        
-        try:
-            _ckpt = torch.load(open(ckpt, "rb"), map_location=torch.device("cpu"))
-            print(f"Successfully load ckpt {ckpt}")
-            incompatibleKeys = self.load_state_dict(_ckpt[key], strict=False)
-            print(incompatibleKeys)        
-        except Exception as e:
-            print(f"Failed loading checkpoint form {ckpt}: {e}")
+        print(f'Load backbone state dict from {ckpt}')
+        if ckpt.startswith('http'):
+            from mmengine.utils.dl_utils import load_url
+            state_dict = load_url(ckpt, map_location='cpu')['state_dict']
+        else:
+            state_dict = torch.load(ckpt, map_location='cpu')['state_dict']
+        res = self.load_state_dict(state_dict, strict=False)
+        print(res)
 
     def forward(self, x):
         def layer_forward(l, x):
