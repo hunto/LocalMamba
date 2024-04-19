@@ -1,5 +1,5 @@
 _base_ = [
-    './upernet_local_vssm_tiny_4xb4-160k_ade20k-512x512.py'
+    './upernet_local_vssm_tiny_8xb2-160k_ade20k-512x512.py'
 ]
 
 
