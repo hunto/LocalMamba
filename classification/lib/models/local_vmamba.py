@@ -1,5 +1,6 @@
 import math
 import copy
+import warnings
 from functools import partial
 from typing import Optional, Callable, Any
 from collections import OrderedDict
@@ -21,19 +22,14 @@ DropPath.__repr__ = lambda self: f"timm.DropPath({self.drop_prob})"
 try:
     "sscore acts the same as mamba_ssm"
     SSMODE = "sscore"
-    if torch.__version__ > '2.0.0':
-        from selective_scan_vmamba_pt202 import selective_scan_cuda_core
-    else:
-        from selective_scan_vmamba import selective_scan_cuda_core
+    import selective_scan_cuda_core
+    print("Using \"selective_scan_cuda_core\"")
 except Exception as e:
-    print(e, flush=True)
-    "you should install mamba_ssm to use this"
+    warnings.warn(f"{e}\n\"selective_scan_cuda_core\" not found, use default \"selective_scan_cuda\" instead.")
+    # print(e, flush=True)
     SSMODE = "mamba_ssm"
     import selective_scan_cuda
-    # from mamba_ssm.ops.selective_scan_interface import selective_scan_fn, selective_scan_ref
 
-# SSMODE = "mamba_ssm"
-# import selective_scan_cuda
 
 # fvcore flops =======================================
 
@@ -154,7 +150,7 @@ class MultiScanVSSM(MultiScan):
         B, C, H, W = x.shape
         self.token_size = (H, W)
 
-        xs = super().multi_scan(x)  # [[B, C, L], ...]
+        xs = super().multi_scan(x)  # [[B, C, H, W], ...]
 
         self.scan_lengths = [x.shape[2] for x in xs]
         max_length = max(self.scan_lengths)
