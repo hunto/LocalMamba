@@ -320,10 +320,10 @@ class VisionMamba(nn.Module):
                 layer.mixer.multi_scan.token_size = (H, W)
             if H != self.token_size[0] or W != self.token_size[1]:
                 # downstream tasks such as det and seg may have various input resolutions
-                pos_embed = self.resize_pos_embed(self.pos_embed, (H, W), self.token_size, 'bicubic')
+                pos_embed = Backbone_LocalVisionMamba.resize_pos_embed(self.pos_embed, (H, W), self.token_size, 'bicubic')
                 if self.if_rope:
-                    freqs_cos = self.resize_pos_embed(self.rope.freqs_cos.unsqueeze(0), (H, W), self.token_size, 'bicubic')[0]
-                    freqs_sin = self.resize_pos_embed(self.rope.freqs_sin.unsqueeze(0), (H, W), self.token_size, 'bicubic')[0]
+                    freqs_cos = Backbone_LocalVisionMamba.resize_pos_embed(self.rope.freqs_cos.unsqueeze(0), (H, W), self.token_size, 'bicubic')[0]
+                    freqs_sin = Backbone_LocalVisionMamba.resize_pos_embed(self.rope.freqs_sin.unsqueeze(0), (H, W), self.token_size, 'bicubic')[0]
             else:
                 pos_embed = self.pos_embed
                 freqs_cos = None
