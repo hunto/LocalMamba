@@ -29,3 +29,18 @@ class MM_LocalVim(BaseModule, Backbone_LocalVim):
         Backbone_LocalVim.__init__(self, *args, **kwargs)
         self._is_init = True
         self.init_cfg = None
+
+
+build = import_abspy(
+    "lib.models.local_vmamba", 
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "../classification/"),
+)
+
+Backbone_LocalVSSM: nn.Module = build.Backbone_LocalVSSM
+@MODELS_MMSEG.register_module()
+@MODELS_MMDET.register_module()
+class MM_LocalVSSM(BaseModule, Backbone_LocalVSSM):
+    def __init__(self, *args, **kwargs):
+        Backbone_LocalVSSM.__init__(self, *args, **kwargs)
+        self._is_init = True
+        self.init_cfg = None

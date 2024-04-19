@@ -16,7 +16,7 @@ ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
 
 ## Updates
-* 19 Apr: We released the ckpt and log of `LocalVim-S`.
+* 19 Apr: We released the segmentation and detection code for all the models. We released the ckpt and log of `LocalVim-S`.
 * 01 Apr: We released the ckpt and log of `LocalVMamba-S`.
 * 01 Apr: We spent some time debugging an undesired performance collapse bug in triton code of local scan, but we still couldn't find the bug. So we switched the local scan and local reverse to the original pytorch versions. The speeds are similar.
 * 21 Mar: We released the detection code of `LocalVim`.

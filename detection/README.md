@@ -21,6 +21,15 @@ The training script is the same as the original mmdetection, you may see the off
 |Cascade Mask R-CNN|LocalVim-S|||[config](configs/local_mamba/vitdet_cascade_mask-rcnn_local_vim_small_lsj-100e.py)|
 
 
+|Model|Schedule|Backbone|Det AP|Seg AP|config/ckpt/log|
+|:--:|:--:|:--:|:--:|:--:|:--:|
+|Mask R-CNN|1x|LocalVMamba-T|||[config](configs/local_mamba/mask_rcnn_local_vssm_tiny_fpn_coco.py)|
+|Mask R-CNN|1x|LocalVMamba-S|||[config](configs/local_mamba/mask_rcnn_local_vssm_small_fpn_coco.py)|
+|Mask R-CNN|MS 3x|LocalVMamba-T|||[config](configs/local_mamba/mask_rcnn_local_vssm_tiny_fpn_coco_ms_3x.py)|
+|Mask R-CNN|MS 3x|LocalVMamba-S|||[config](configs/local_mamba/mask_rcnn_local_vssm_small_fpn_coco_ms_3x.py)|
+
+
+
 ## FLOPs
 
 The FLOPs and #parameters can be measured through the following command:
