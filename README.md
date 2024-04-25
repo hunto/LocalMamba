@@ -61,6 +61,8 @@ Recent advancements in state space models, notably Mamba, have demonstrated sign
 |**LocalVMamba-T**|ImageNet-1K|224x224|82.7|26M|5.7G|retraining...|
 |**LocalVMamba-S**|ImageNet-1K|224x224|83.7|50M|11.4G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vssm_small.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vssm_small.txt)|
 
+> **Clarify on the accuracies of Vim models:** Subsequent to our implementation, the authors made significant modifications to the model architecture and training strategy, as documented in this commit: hustvl/Vim@4567f9d. These changes improved the model's accuracy to 76.1%. Our implementation, however, was based on the earlier version (v1 as published on arXiv (link)), and did not incorporate the advanced modifications found in v2. **We will update our model to the newest version in comparisons with v2.**
+
 ### Object Detection & Instance Segmentation
 
 See [detection](detection) folder.
