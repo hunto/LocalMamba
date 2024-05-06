@@ -184,6 +184,7 @@ class MultiMamba(nn.Module):
         bimamba_type="none",
         directions=None,
         token_size=(14, 14),
+        use_middle_cls_token=False,
     ):
         factory_kwargs = {"device": device, "dtype": dtype}
         super().__init__()
@@ -197,6 +198,7 @@ class MultiMamba(nn.Module):
         self.layer_idx = layer_idx
         self.bimamba_type = bimamba_type
         self.token_size = token_size
+        self.use_middle_cls_token = use_middle_cls_token
 
         self.in_proj = nn.Linear(self.d_model, self.d_inner * 2, bias=bias, **factory_kwargs)
 
@@ -272,7 +274,26 @@ class MultiMamba(nn.Module):
         """
         xz = self.in_proj(hidden_states)
 
+        if self.use_middle_cls_token:
+            """
+            Steps to use middle cls token
+            # 1. split cls token out
+            # 2. do 2d scan
+            # 3. append cls token to the middle
+            # 4. ssm
+            # 5. split cls token out
+            # 6. reverse tokens
+            # 7. append cls token to the middle
+            """
+            cls_position = (xz.shape[1] - 1) // 2
+            cls_token = xz[:, cls_position:cls_position+1]
+            xz = torch.cat([xz[:, :cls_position], xz[:, cls_position+1:]], dim=1)
+
         xs = self.multi_scan.multi_scan(xz)  # [[BDL], [BDL], ...]
+        if self.use_middle_cls_token:
+            # step 3
+            xs = [torch.cat([x[:, :, :cls_position], cls_token.transpose(-2, -1), x[:, :, cls_position:]], dim=2) for x in xs]
+
         outs = []
         for i, xz in enumerate(xs):
             # xz = rearrange(xz, "b l d -> b d l")
@@ -297,7 +318,24 @@ class MultiMamba(nn.Module):
             )
             outs.append(out)
 
+        if self.use_middle_cls_token:
+            # step 5
+            new_outs = []
+            cls_tokens = []
+            for out in outs:
+                cls_tokens.append(out[:, :, cls_position:cls_position+1])
+                new_outs.append(torch.cat([out[:, :, :cls_position], out[:, :, cls_position+1:]], dim=2))
+            outs = new_outs
+
         outs = self.multi_scan.multi_reverse(outs)
+
+        if self.use_middle_cls_token:
+            # step 7
+            new_outs = []
+            for out, cls_token in zip(outs, cls_tokens):
+                new_outs.append(torch.cat([out[:, :, :cls_position], cls_token, out[:, :, cls_position:]], dim=2))
+            outs = new_outs
+
         outs = [self.attn(rearrange(out, 'b d l -> b l d')) for out in outs]
         out = self.multi_scan(outs)
         out = F.linear(out, self.out_proj.weight, self.out_proj.bias)

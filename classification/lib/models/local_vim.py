@@ -106,13 +106,14 @@ def create_block(
     dtype=None,
     bimamba_type="none",
     directions=None,
+    use_middle_cls_token=False,
     token_size=(14, 14),
     mamba_cls=None,
 ):
     if ssm_cfg is None:
         ssm_cfg = {}
     factory_kwargs = {"device": device, "dtype": dtype}
-    mixer_cls = partial(mamba_cls, layer_idx=layer_idx, bimamba_type=bimamba_type, directions=directions, token_size=token_size, **ssm_cfg, **factory_kwargs)
+    mixer_cls = partial(mamba_cls, layer_idx=layer_idx, bimamba_type=bimamba_type, directions=directions, token_size=token_size, use_middle_cls_token=use_middle_cls_token, **ssm_cfg, **factory_kwargs)
     norm_cls = partial(
         nn.LayerNorm if not rms_norm else RMSNorm, eps=norm_epsilon, **factory_kwargs
     )
@@ -199,6 +200,7 @@ class VisionMamba(nn.Module):
                  if_rope_residual=False,
                  bimamba_type="none",
                  if_cls_token=False,
+                 use_middle_cls_token=False,
                  directions=None,
                  mamba_cls=MultiMamba,
                  **kwargs):
@@ -213,6 +215,7 @@ class VisionMamba(nn.Module):
         self.if_rope = if_rope
         self.if_rope_residual = if_rope_residual
         self.if_cls_token = if_cls_token
+        self.use_middle_cls_token = use_middle_cls_token
         self.num_tokens = 1 if if_cls_token else 0
         self.patch_size = patch_size
 
@@ -267,6 +270,7 @@ class VisionMamba(nn.Module):
                     bimamba_type=bimamba_type,
                     drop_path=inter_dpr[i],
                     directions=directions[i],
+                    use_middle_cls_token=use_middle_cls_token,
                     token_size=self.token_size,
                     mamba_cls=mamba_cls,
                     **factory_kwargs,
@@ -311,8 +315,14 @@ class VisionMamba(nn.Module):
         B, _, H, W = x.shape
         x = self.patch_embed(x)
         if self.if_cls_token:
-            cls_token = self.cls_token.expand(x.shape[0], -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
-            x = torch.cat((cls_token, x), dim=1)
+            cls_token = self.cls_token.expand(x.shape[0], -1, -1)
+            if self.use_middle_cls_token:
+                token_position = x.shape[1] // 2
+                # add cls token to the middle of sequence
+                x = torch.cat([x[:, :token_position, :], cls_token, x[:, token_position:, :]], dim=1)
+            else:
+                # stole cls_tokens impl from Phil Wang, thanks
+                x = torch.cat((cls_token, x), dim=1)
 
         if self.if_abs_pos_embed:
             H, W = math.ceil(H / self.patch_size), math.ceil(W / self.patch_size)
@@ -375,7 +385,10 @@ class VisionMamba(nn.Module):
 
         # return only cls token if it exists
         if self.if_cls_token:
-            return hidden_states[:, 0, :]
+            if self.use_middle_cls_token:
+                return hidden_states[:, token_position, :]
+            else:
+                return hidden_states[:, 0, :]
 
         if self.final_pool_type == 'none':
             return hidden_states[:, -1, :]
@@ -401,6 +414,8 @@ class VisionMamba(nn.Module):
         flops += get_flops(self.patch_embed, input_shape)
 
         L = self.patch_embed.num_patches
+        if self.if_cls_token:
+            L += 1
         for layer in self.layers:
             # 1 in_proj
             flops += layer.mixer.in_proj.in_features * layer.mixer.in_proj.out_features * L
@@ -592,6 +607,52 @@ def local_vim_tiny(pretrained=False, **kwargs):
         )
         model.load_state_dict(checkpoint["model"])
     return model
+
+
+@register_model
+def local_vim_tiny_middle_cls_token(pretrained=False, **kwargs):
+    directions = (
+        ['h', 'v_flip', 'w7', 'w7_flip'],
+        ['h_flip', 'w2_flip', 'w7', 'w7_flip'],
+        ['h', 'h_flip', 'v', 'w7'],
+        ['h', 'h_flip', 'v', 'v_flip'],
+        ['h', 'h_flip', 'v', 'v_flip'],
+        ['h', 'h_flip', 'v', 'v_flip'],
+        ['h_flip', 'v', 'v_flip', 'w7'],
+        ['h_flip', 'v', 'v_flip', 'w2_flip'],
+        ['h', 'h_flip', 'v', 'v_flip'],
+        ['h', 'h_flip', 'v', 'v_flip'],
+        ['h', 'v', 'v_flip', 'w2'],
+        ['h', 'v', 'v_flip', 'w2_flip'],
+        ['h', 'h_flip', 'v_flip', 'w7'],
+        ['h_flip', 'v', 'v_flip', 'w2'],
+        ['h', 'h_flip', 'v', 'v_flip'],
+        ['h', 'v', 'w2', 'w2_flip'],
+        ['v', 'v_flip', 'w2', 'w7'],
+        ['h', 'h_flip', 'v', 'w2'],
+        ['h', 'h_flip', 'w2_flip', 'w7'],
+        ['v', 'v_flip', 'w2', 'w2_flip'],
+    )
+    """
+    Changes:
+    1. disable rope
+    2. add middle cls token
+    """
+
+    model = VisionMamba(
+        patch_size=16, embed_dim=192, depth=20, rms_norm=True, residual_in_fp32=True, fused_add_norm=True, final_pool_type='mean', 
+        if_abs_pos_embed=True, if_rope=False, if_rope_residual=False, bimamba_type="v2", directions=directions, mamba_cls=MultiMamba,
+        if_cls_token=True, use_middle_cls_token=True, **kwargs)
+    # if_cls_token=True, if_devide_out=True, use_middle_cls_token=True
+    model.default_cfg = _cfg()
+    if pretrained:
+        checkpoint = torch.hub.load_state_dict_from_url(
+            url="to.do",
+            map_location="cpu", check_hash=True
+        )
+        model.load_state_dict(checkpoint["model"])
+    return model
+
 
 @register_model
 def local_vim_small(pretrained=False, **kwargs):

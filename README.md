@@ -16,6 +16,7 @@ ArXiv Preprint ([arXiv 2403.09338](https://arxiv.org/abs/2403.09338))
 
 
 ## Updates
+* 06 May: We improve our LocalVim with `middle class token` proposed by [Vim](https://github.com/hustvl/Vim/commit/4567f9d64e7dd40e5c914be0fa9d59c15199fea7). The log and checkpoint of `local_vim_tiny_middle_cls_token` are uploaded. Thanks to @FanqingM's [issue](https://github.com/hunto/LocalMamba/issues/19).
 * 19 Apr: We released the segmentation and detection code for all the models. We released the ckpt and log of `LocalVim-S`.
 * 01 Apr: We released the ckpt and log of `LocalVMamba-S`.
 * 01 Apr: We spent some time debugging an undesired performance collapse bug in triton code of local scan, but we still couldn't find the bug. So we switched the local scan and local reverse to the original pytorch versions. The speeds are similar.
@@ -52,16 +53,20 @@ Recent advancements in state space models, notably Mamba, have demonstrated sign
 
 |Model|Dataset|Resolution|ACC@1|#Params|FLOPs|ckpts/logs|
 |:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|Vim-Ti ([mid_cls_token](https://github.com/hustvl/Vim/commit/4567f9d64e7dd40e5c914be0fa9d59c15199fea7))|ImageNet-1K|224x224|76.1|7M|1.5G|-|
+|**LocalVim-T** (mid_cls_token)|ImageNet-1K|224x224|77.8|8M|1.5G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vim_tiny_middle_cls_token.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_tiny_middle_cls_token.txt)|
+||||||||
 |Vim-Ti|ImageNet-1K|224x224|73.1|7M|1.5G|-|
 |Vim-S|ImageNet-1K|224x224|80.3|26M|5.1G|-|
 |**LocalVim-T**|ImageNet-1K|224x224|76.2|8M|1.5G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vim_tiny.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_tiny.txt)|
 |**LocalVim-S**|ImageNet-1K|224x224|81.1|28M|4.8G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vssm_small.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vim_small.txt)|
+||||||||
 |VMamba-T|ImageNet-1K|224x224|82.2|22M|5.6G|-|
 |VMamba-S|ImageNet-1K|224x224|83.5|44M|11.2G|-|
 |**LocalVMamba-T**|ImageNet-1K|224x224|82.7|26M|5.7G|retraining...|
 |**LocalVMamba-S**|ImageNet-1K|224x224|83.7|50M|11.4G|[ckpt](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/local_vssm_small.ckpt)/[log](https://github.com/hunto/LocalMamba/releases/download/v1.0.0/log_local_vssm_small.txt)|
 
-> **Clarify on the accuracies of Vim models:** Subsequent to our implementation, the authors made significant modifications to the model architecture and training strategy, as documented in this commit: [hustvl/Vim@4567f9d](https://github.com/hustvl/Vim/commit/4567f9d64e7dd40e5c914be0fa9d59c15199fea7). These changes improved the model's accuracy to 76.1%. Our implementation, however, was based on the earlier version (v1 as published on arXiv ([link](https://arxiv.org/pdf/2401.09417v1.pdf))), and did not incorporate the advanced modifications found in v2. **We will update our model to the newest version in comparisons with v2.**
+<!-- > **Clarify on the accuracies of Vim models:** Subsequent to our implementation, the authors made significant modifications to the model architecture and training strategy, as documented in this commit: [hustvl/Vim@4567f9d](https://github.com/hustvl/Vim/commit/4567f9d64e7dd40e5c914be0fa9d59c15199fea7). These changes improved the model's accuracy to 76.1%. Our implementation, however, was based on the earlier version (v1 as published on arXiv ([link](https://arxiv.org/pdf/2401.09417v1.pdf))), and did not incorporate the advanced modifications found in v2. **We will update our model to the newest version in comparisons with v2.** -->
 
 ### Object Detection & Instance Segmentation
 
